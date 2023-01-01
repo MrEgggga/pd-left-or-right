@@ -53,7 +53,7 @@ gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
 function playdate.update()
   if title then
-    if false then
+    if true then
       gfx.clear(gfx.kColorBlack)
       title = false
       tutorial = true

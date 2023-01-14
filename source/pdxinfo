@@ -2,5 +2,5 @@ name=left or right
 author=jmibo
 description=press in the direction of the arrow at the top of the screen
 bundleID=io.itch.fried-stew.leftorright
-version=1.0
+version=1.04
 imagePath=images/launcher

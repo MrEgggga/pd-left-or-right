@@ -21,12 +21,27 @@ local imgLeft = gfx.image.new("images/left.png")
 local imgRight = gfx.image.new("images/right.png")
 
 local sndLeft = snd.sampleplayer.new("sounds/left.wav")
-sndLeft:setVolume(1, 0)
 local sndRight = snd.sampleplayer.new("sounds/right.wav")
-sndRight:setVolume(0, 1)
 local sndBuzzer = snd.sampleplayer.new("sounds/buzzer.wav")
+sndBuzzer:setVolume(0.8)
 
-local fnt = gfx.font.new("fonts/mont2.pft")
+local flipped = playdate.getFlipped()
+
+local function updatePan(headphone, _mic)
+  if headphone then
+    sndLeft:setVolume(0.7, 0.3)
+    sndRight:setVolume(0.3, 0.7)
+  else
+    sndLeft:setVolume(0.6)
+    sndRight:setVolume(0.6)
+  end
+  snd.setOutputsActive(headphone, not headphone)
+end
+
+updatePan(snd.getHeadphoneState())
+snd.getHeadphoneState(updatePan)
+
+local fnt = gfx.font.new("fonts/mont3.pft")
 
 playdate.display.setRefreshRate(50)
 
@@ -71,9 +86,12 @@ function update()
   end
 
   if not gameover then
-    local left, right = playdate.buttonJustPressed(playdate.kButtonLeft) or playdate.buttonJustPressed(playdate.kButtonB), playdate.buttonJustPressed(playdate.kButtonRight) or playdate.buttonJustPressed(playdate.kButtonA)
+    local l, r = playdate.buttonJustPressed(playdate.kButtonLeft), playdate.buttonJustPressed(playdate.kButtonRight)
+    local a, b = playdate.buttonJustPressed(playdate.kButtonA), playdate.buttonJustPressed(playdate.kButtonB)
+    local left, right =
+      l or ((flipped and a) or (not flipped and b)),
+      r or ((flipped and b) or (not flipped and a))
     if left or right then
-      print(seq[1], left, right)
       if seq[1] ~= right then
         sndBuzzer:play(1)
         gameover = true
@@ -104,7 +122,6 @@ function update()
       animComplete = true
     end
   else
-    print(playdate.getButtonState())
     local current, pressed, released = playdate.getButtonState()
     if pressed > 0 then
       gfx.clear(gfx.kColorBlack)

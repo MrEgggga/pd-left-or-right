@@ -123,7 +123,13 @@ function update()
     end
   else
     local current, pressed, released = playdate.getButtonState()
-    if pressed > 0 then
+    if (pressed & (
+        playdate.kButtonA |
+        playdate.kButtonB |
+        playdate.kButtonUp |
+        playdate.kButtonDown |
+        playdate.kButtonLeft |
+        playdate.kButtonRight)) > 0 then
       gfx.clear(gfx.kColorBlack)
       reset()
     end

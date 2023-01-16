@@ -45,6 +45,32 @@ local fnt = gfx.font.new("fonts/mont3.pft")
 
 playdate.display.setRefreshRate(50)
 
+local textPage = false
+local whichPage = 0
+local justTextPage = false
+local pages = {
+  "controls: left/b, right/a. press in the same direction\n" ..
+  "as the arrow on the top of the screen.",
+
+  "game by jmibo\n" ..
+  "https://github.com/MrEgggga/pd-left-or-right/\n" ..
+  "more games at https://jmibo.neocities.org/"
+}
+
+local menu = playdate.getSystemMenu()
+
+local manItem, error = menu:addMenuItem("game manual", function ()
+  textPage = true
+  justTextPage = false
+  whichPage = 1
+end)
+
+local credItem, error = menu:addMenuItem("credits", function ()
+  textPage = true
+  justTextPage = false
+  whichPage = 2
+end)
+
 local function reset()
   for i = 1, 10 do
     seq[i] = math.random() < 0.5
@@ -66,6 +92,41 @@ gfx.setImageDrawMode(gfx.kDrawModeNXOR)
 fnt:drawTextAligned("left or right", 200, 105, kTextAlignment.center)
 gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
+local function fullRedraw()
+  print("full redraw")
+
+  gfx.clear(gfx.kColorWhite)
+
+  -- arrows
+  for i = 1, 10 do
+    (seq[i] and imgRight or imgLeft):draw(188, (i-1) * 24 + offset * 6)
+
+  end
+
+  -- last arrow
+  if offset > 0 then
+    local a = offset * 50
+    (last and imgRight or imgLeft):draw(last and 400-a or a, 0);
+
+  end
+
+  gfx.setColor(gfx.kColorBlack)
+
+  if score == 0 and tutorial then
+    gfx.drawRect(187, -1, 26, 26)
+  end
+
+  if uncover <= 5000 then gfx.fillRect(0, (uncover * 240 / 5000), 400, 240-(uncover * 240 / 5000)) end -- uncover
+  if cover > 0 then gfx.fillRect(0, 0, 400, (cover * 240 / 5000)) end -- cover
+  -- text
+  gfx.setImageDrawMode(gfx.kDrawModeNXOR)
+  fnt:drawText(score, 0, 0)
+  if animComplete then
+    fnt:drawTextAligned("game over", 200, 105, kTextAlignment.center)
+  end
+  gfx.setImageDrawMode(gfx.kDrawModeCopy)
+end
+
 function playdate.update()
   if title then
     if true then
@@ -74,6 +135,24 @@ function playdate.update()
       tutorial = true
     end
     return
+  end
+
+  if textPage then
+    if not justTextPage then
+      gfx.clear(gfx.kColorBlack)
+      gfx.setImageDrawMode(gfx.kDrawModeNXOR)
+      fnt:drawText("left or right", 0, 0)
+      gfx.drawText(pages[whichPage], 0, 40)
+      gfx.drawTextAligned("(press B)", 400, 220, kTextAlignment.right)
+    end
+    justTextPage = true
+    if playdate.buttonJustPressed(playdate.kButtonB) then
+      textPage = false
+      fullRedraw()
+    end
+    return
+  elseif justTextPage then
+    justTextPage = false
   end
 
   update()
